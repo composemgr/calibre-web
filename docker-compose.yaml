@@ -21,8 +21,8 @@ services:
       PUID: ${SERVICE_USER:-1000}
       PGID: ${SERVICE_GROUP:-1000}
     volumes:
-      - ./rootfs/config/calibre-web:/config
-      - ./rootfs/data/calibre-web:/data
+      - ./volumes/config/calibre-web:/config
+      - ./volumes/data/calibre-web:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083"]
       interval: 30s
