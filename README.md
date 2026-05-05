@@ -47,8 +47,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/config/calibre-web` - Data storage
-- `./rootfs/data/calibre-web` - Data storage
+- `./volumes/config/calibre-web` - Data storage
+- `./volumes/data/calibre-web` - Data storage
 
 ## 🔍 Logging
 
