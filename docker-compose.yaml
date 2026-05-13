@@ -1,5 +1,6 @@
 # nginx proxy address - http://172.17.0.1:8083
 
+name: calibre-web
 x-logging: &default-logging
   driver: json-file
   options:
@@ -7,22 +8,25 @@ x-logging: &default-logging
     max-file: "1"
 
 services:
-  calibre-web:
+  app:
     image: linuxserver/calibre-web:latest
+    pull_policy: always
     container_name: calibre-web-app
-    restart: unless-stopped
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
     logging: *default-logging
     networks:
       - calibre-web
     ports:
-      - "8083:8083"
+      - "172.17.0.1:8083:8083"
     environment:
       TZ: ${TZ:-America/New_York}
       PUID: ${SERVICE_USER:-1000}
       PGID: ${SERVICE_GROUP:-1000}
+      DOCKER_MODS: linuxserver/mods:universal-calibre
     volumes:
       - ./volumes/config/calibre-web:/config
-      - ./volumes/data/calibre-web:/data
+      - ./volumes/data/calibre-web:/books
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083"]
       interval: 30s
@@ -31,4 +35,5 @@ services:
 
 networks:
   calibre-web:
+    name: calibre-web
     external: false
