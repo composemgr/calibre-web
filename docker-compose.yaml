@@ -17,6 +17,8 @@ services:
     logging: *default-logging
     networks:
       - calibre-web
+      - proxy
+      - cloudflare
     ports:
       - "172.17.0.1:8083:8083"
     environment:
@@ -24,6 +26,8 @@ services:
       PUID: ${SERVICE_USER:-1000}
       PGID: ${SERVICE_GROUP:-1000}
       DOCKER_MODS: linuxserver/mods:universal-calibre
+      CONTAINER_NAME: calibre-web-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     volumes:
       - ./volumes/config/calibre-web:/config
       - ./volumes/data/calibre-web:/books
@@ -32,8 +36,28 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://calibre-web-app:8083'
+      - 'cloudflare.hostname=calibre-web.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.calibre-web-app.entrypoints=http'
+      - 'traefik.http.routers.calibre-web-app-secure.tls=true'
+      - 'traefik.http.routers.calibre-web-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.calibre-web-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.calibre-web-app.middlewares=calibre-web-app-https-redirect'
+      - 'traefik.http.routers.calibre-web-app-secure.entrypoints=https'
+      - 'traefik.http.routers.calibre-web-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.calibre-web-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.calibre-web-app-secure.service=calibre-web-app'
+      - 'traefik.http.services.calibre-web-app.loadbalancer.server.port=8083'
 
 networks:
   calibre-web:
     name: calibre-web
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
